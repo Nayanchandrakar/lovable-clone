@@ -1,4 +1,3 @@
-import { dateCreation } from "@leapercrm/database/utils"
 import { createId } from "@paralleldrive/cuid2"
 import {
   boolean,
@@ -8,6 +7,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core"
+import { dateCreation } from "@/database/utils"
 
 export const users = pgTable(
   "user",
