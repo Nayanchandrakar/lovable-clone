@@ -1,0 +1,9 @@
+{
+  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  }
+}

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "prepare": "husky",
+    "lint": "biome lint --write",
+    "format": "biome check --write"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -14,14 +16,19 @@
     "next": "15.3.5"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@biomejs/biome": "2.0.6",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
     "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.5",
-    "@eslint/eslintrc": "^3"
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }
