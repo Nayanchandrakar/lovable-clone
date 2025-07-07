@@ -21,7 +21,9 @@
     "db:up": "drizzle-kit up"
   },
   "dependencies": {
+    "@e2b/code-interpreter": "^1.5.1",
     "@hookform/resolvers": "^5.1.1",
+    "@inngest/agent-kit": "^0.9.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -82,6 +84,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
+    "@e2b/cli": "^1.5.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

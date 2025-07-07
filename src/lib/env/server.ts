@@ -1,11 +1,19 @@
 import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
 
-export const clientEnv = createEnv({
-  client: {
-    NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
+export const serverEnv = createEnv({
+  server: {
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .default("development"),
+
+    DATABASE_URL: z.string({
+      required_error: "DATABASE_URL is required in environment variables",
+    }),
+
+    OPEN_API_KEY: z.string({
+      required_error: "OPEN_API_KEY is required in environment variables",
+    }),
   },
-  runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  },
+  experimental__runtimeEnv: process.env,
 })
