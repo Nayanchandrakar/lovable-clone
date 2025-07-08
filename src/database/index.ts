@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/neon-http"
 import { drizzle as drizzleWs } from "drizzle-orm/neon-serverless"
-import { serverEnv } from "@/lib/env/client"
+import { serverEnv } from "@/lib/env/server"
 import type {
   ConfigOptions,
   HttpConnectionType,
