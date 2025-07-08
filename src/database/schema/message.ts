@@ -8,13 +8,13 @@ import {
 import { project } from "./projects"
 
 export const message = pgTable("message", {
-  id: text()
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  content: text(),
-  role: messageRoleEnum(),
-  type: messageTypeEnum(),
-  projectId: text()
+  content: text("content"),
+  role: messageRoleEnum("role"),
+  type: messageTypeEnum("type"),
+  projectId: text("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   ...dateCreation,

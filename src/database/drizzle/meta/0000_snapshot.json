@@ -1,5 +1,5 @@
 {
-  "id": "0096e96a-3bd8-4a9e-bfae-0f698776323d",
+  "id": "e88f61a5-60ba-4ed9-9281-3c593786970e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,14 +14,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "messageId": {
-          "name": "messageId",
+        "message_id": {
+          "name": "message_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "sandboxUrl": {
-          "name": "sandboxUrl",
+        "sandbox_url": {
+          "name": "sandbox_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -55,11 +55,11 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "fragment_messageId_message_id_fk": {
-          "name": "fragment_messageId_message_id_fk",
+        "fragment_message_id_message_id_fk": {
+          "name": "fragment_message_id_message_id_fk",
           "tableFrom": "fragment",
           "tableTo": "message",
-          "columnsFrom": ["messageId"],
+          "columnsFrom": ["message_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -67,10 +67,10 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "fragment_messageId_unique": {
-          "name": "fragment_messageId_unique",
+        "fragment_message_id_unique": {
+          "name": "fragment_message_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["messageId"]
+          "columns": ["message_id"]
         }
       },
       "policies": {},
@@ -104,6 +104,61 @@
           "name": "type",
           "type": "result",
           "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "message_project_id_project_id_fk": {
+          "name": "message_project_id_project_id_fk",
+          "tableFrom": "message",
+          "tableTo": "project",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.project": {
+      "name": "project",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

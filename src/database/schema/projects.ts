@@ -3,7 +3,7 @@ import { pgTable, text } from "drizzle-orm/pg-core"
 import { dateCreation } from "@/database/utils"
 
 export const project = pgTable("project", {
-  id: text()
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
   name: text(),
