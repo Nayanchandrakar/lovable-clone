@@ -5,6 +5,7 @@ import {
   messageRoleEnum,
   messageTypeEnum,
 } from "@/database/utils"
+import { project } from "./projects"
 
 export const message = pgTable("message", {
   id: text()
@@ -13,6 +14,9 @@ export const message = pgTable("message", {
   content: text(),
   role: messageRoleEnum(),
   type: messageTypeEnum(),
+  projectId: text()
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
   ...dateCreation,
 })
 

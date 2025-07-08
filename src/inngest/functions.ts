@@ -171,29 +171,43 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run("save-result", async () => {
       if (isError) {
-        return await dbHttp
+        const [createdMessage] = await dbHttp
           .insert(message)
           .values({
+            projectId: event.data.projectId,
             content: "Something went wrong. Please try again",
             role: "ASSISTANT",
             type: "ERROR",
           })
           .returning()
+
+        return createdMessage
       }
 
-      await dbWs.transaction(async (tx) => {
-        await tx.insert(message).values({
-          content: result.state.data.summary,
-          role: "ASSISTANT",
-          type: "RESULT",
-        })
+      const res = await dbWs.transaction(async (tx) => {
+        const [createdMessage] = await tx
+          .insert(message)
+          .values({
+            projectId: event.data.projectId,
+            content: result.state.data.summary,
+            role: "ASSISTANT",
+            type: "RESULT",
+          })
+          .returning()
 
-        await tx.insert(fragment).values({
-          sandboxUrl,
-          title: "Fragment",
-          files: result.state.data.files,
-        })
+        const [createdFragment] = await tx
+          .insert(fragment)
+          .values({
+            sandboxUrl,
+            title: "Fragment",
+            files: result.state.data.files,
+          })
+          .returning()
+
+        return { createdMessage, createdFragment }
       })
+
+      return res
     })
 
     return {

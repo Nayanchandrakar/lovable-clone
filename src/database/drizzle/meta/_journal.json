@@ -8,6 +8,13 @@
       "when": 1751950347562,
       "tag": "0000_aberrant_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1751956008965,
+      "tag": "0001_certain_lethal_legion",
+      "breakpoints": true
     }
   ]
 }
