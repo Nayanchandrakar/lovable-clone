@@ -11,8 +11,12 @@ export const serverEnv = createEnv({
       required_error: "DATABASE_URL is required in environment variables",
     }),
 
-    OPEN_API_KEY: z.string({
-      required_error: "OPEN_API_KEY is required in environment variables",
+    GEMINI_API_KEY: z.string({
+      required_error: "GEMINI_API_KEY is required in environment variables",
+    }),
+
+    E2B_API_KEY: z.string({
+      required_error: "E2B_API_KEY is required in environment variables",
     }),
   },
   experimental__runtimeEnv: process.env,
