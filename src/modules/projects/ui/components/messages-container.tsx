@@ -1,7 +1,7 @@
 "use client"
 
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { MessageCard } from "@/modules/projects/ui/components/message-card"
 import { MessageForm } from "@/modules/projects/ui/components/message-form"
 import { MessageLoading } from "@/modules/projects/ui/components/message-loading"
@@ -21,6 +21,7 @@ export const MessagesContainer = ({
 }: Props) => {
   const trpc = useTRPC()
   const bottomRef = useRef<HTMLDivElement>(null)
+  const lastAssitantMessageIdRef = useRef<string | null>(null)
 
   const { data: messages } = useSuspenseQuery(
     trpc.messages.getMany.queryOptions(
@@ -31,15 +32,19 @@ export const MessagesContainer = ({
     ),
   )
 
-  // useEffect(() => {
-  //   const lastAssitantMessage = messages.findLast((message) => {
-  //     message.role === "ASSISTANT" && !!message.fragment
-  //   })
+  useEffect(() => {
+    const lastAssitantMessage = messages.findLast((message) => {
+      message.role === "ASSISTANT"
+    })
 
-  //   if (lastAssitantMessage) {
-  //     setActiveFragment(lastAssitantMessage.fragment)
-  //   }
-  // }, [messages])
+    if (
+      lastAssitantMessage?.fragment &&
+      lastAssitantMessage.id !== lastAssitantMessage.content
+    ) {
+      setActiveFragment(lastAssitantMessage.fragment)
+      lastAssitantMessageIdRef.current = lastAssitantMessage.id
+    }
+  }, [messages, setActiveFragment])
 
   // useEffect(() => {
   //   bottomRef.current?.scrollIntoView()
