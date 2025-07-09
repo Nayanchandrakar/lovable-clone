@@ -31,7 +31,8 @@
         "useFocusableInteractive": "off",
         "useSemanticElements": "off",
         "noRedundantRoles": "off",
-        "useAriaPropsForRole": "off"
+        "useAriaPropsForRole": "off",
+        "useButtonType": "off"
       },
       "nursery": {
         "noTsIgnore": "error"

@@ -198,6 +198,7 @@ export const codeAgentFunction = inngest.createFunction(
         const [createdFragment] = await tx
           .insert(fragment)
           .values({
+            messageId: createdMessage?.id as string,
             sandboxUrl,
             title: "Fragment",
             files: result.state.data.files,

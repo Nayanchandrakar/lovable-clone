@@ -4,14 +4,14 @@ import { message } from "@/database/schema/message"
 import { dateCreation } from "@/database/utils"
 
 export const fragment = pgTable("fragment", {
-  id: text()
+  id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  messageId: text()
+  messageId: text("message_id")
     .unique()
     .references(() => message.id, { onDelete: "cascade" }),
-  sandboxUrl: text(),
-  title: text(),
-  files: json(),
+  sandboxUrl: text("sandbox_url"),
+  title: text("title"),
+  files: json("files"),
   ...dateCreation,
 })

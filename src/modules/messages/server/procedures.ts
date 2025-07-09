@@ -1,18 +1,34 @@
-import { desc } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 import z from "zod"
 import { dbHttp } from "@/database"
-import { message } from "@/database/schema"
+import { fragment, message } from "@/database/schema"
 import { inngest } from "@/inngest/client"
 import { baseProcedure, createTRPCRouter } from "@/trpc/init"
 
 export const messageRouter = createTRPCRouter({
-  getMany: baseProcedure.query(async () => {
-    const messages = await dbHttp
-      .select()
-      .from(message)
-      .orderBy(desc(message.updatedAt))
-    return messages
-  }),
+  getMany: baseProcedure
+    .input(
+      z.object({
+        projectId: z.string().min(1, { message: "ProjectId is required" }),
+      }),
+    )
+    .query(async ({ input }) => {
+      const messages = await dbHttp
+        .select({
+          id: message.id,
+          content: message.content,
+          role: message.role,
+          type: message.type,
+          projectId: message.projectId,
+          createdAt: message.createdAt,
+          fragment: fragment,
+        })
+        .from(message)
+        .leftJoin(fragment, eq(message.id, fragment.messageId))
+        .where(eq(message.projectId, input.projectId))
+        .orderBy(asc(message.updatedAt))
+      return messages
+    }),
   create: baseProcedure
     .input(
       z.object({
