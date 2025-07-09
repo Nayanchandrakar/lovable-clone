@@ -11,9 +11,9 @@ export const message = pgTable("message", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  content: text("content"),
-  role: messageRoleEnum("role"),
-  type: messageTypeEnum("type"),
+  content: text("content").notNull(),
+  role: messageRoleEnum("role").notNull(),
+  type: messageTypeEnum("type").notNull(),
   projectId: text("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),

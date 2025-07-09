@@ -6,6 +6,7 @@ export const project = pgTable("project", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  name: text(),
+  userId: text("user_id").notNull(),
+  name: text().notNull(),
   ...dateCreation,
 })

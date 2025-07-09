@@ -1,5 +1,6 @@
 "use client"
 
+import { useClerk } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ArrowUpIcon, Loader2Icon } from "lucide-react"
@@ -27,6 +28,8 @@ export const ProjectForm = () => {
 
   const router = useRouter()
   const trpc = useTRPC()
+  const clerk = useClerk()
+
   const queryClient = useQueryClient()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,9 +50,12 @@ export const ProjectForm = () => {
     trpc.projects.create.mutationOptions({
       onSuccess: (data) => {
         queryClient.invalidateQueries(trpc.projects.getMany.queryOptions())
-        router.push(`/projects/${data?.projectResult?.id}`)
+        router.push(`/project/${data?.projectResult?.id}`)
       },
       onError: (error) => {
+        if (error.data?.code === "UNAUTHORIZED") {
+          clerk.openSignIn()
+        }
         toast.error(error.message)
       },
     }),

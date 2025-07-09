@@ -1,24 +1,26 @@
 import { TRPCError } from "@trpc/server"
-import { desc, eq } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 import { generateSlug } from "random-word-slugs"
 import z from "zod"
 import { dbHttp, dbWs } from "@/database"
 import { message, project } from "@/database/schema"
 import { inngest } from "@/inngest/client"
-import { baseProcedure, createTRPCRouter } from "@/trpc/init"
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init"
 
 export const projectsRouer = createTRPCRouter({
-  getOne: baseProcedure
+  getOne: protectedProcedure
     .input(
       z.object({
         id: z.string().min(1, { message: "Id is required" }),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const [projects] = await dbHttp
         .select()
         .from(project)
-        .where(eq(project.id, input.id))
+        .where(
+          and(eq(project.id, input.id), eq(project.userId, ctx.auth.userId)),
+        )
         .orderBy(desc(project.updatedAt))
 
       if (!projects) {
@@ -26,14 +28,15 @@ export const projectsRouer = createTRPCRouter({
       }
       return projects
     }),
-  getMany: baseProcedure.query(async () => {
+  getMany: protectedProcedure.query(async ({ ctx }) => {
     const projects = await dbHttp
       .select()
       .from(project)
+      .where(eq(project.userId, ctx.auth.userId))
       .orderBy(desc(project.updatedAt))
     return projects
   }),
-  create: baseProcedure
+  create: protectedProcedure
     .input(
       z.object({
         value: z
@@ -42,8 +45,7 @@ export const projectsRouer = createTRPCRouter({
           .max(10000, { message: "Prompt is too long." }),
       }),
     )
-    .mutation(async ({ input }) => {
-      console.log(input)
+    .mutation(async ({ input, ctx }) => {
       const createdProject = await dbWs.transaction(async (tx) => {
         const [projectResult] = await tx
           .insert(project)
@@ -51,6 +53,7 @@ export const projectsRouer = createTRPCRouter({
             name: generateSlug(2, {
               format: "kebab",
             }),
+            userId: ctx.auth.userId,
           })
           .returning()
 
