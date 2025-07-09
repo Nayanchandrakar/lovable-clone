@@ -8,10 +8,11 @@ export const fragment = pgTable("fragment", {
     .primaryKey()
     .$defaultFn(() => createId()),
   messageId: text("message_id")
+    .notNull()
     .unique()
     .references(() => message.id, { onDelete: "cascade" }),
-  sandboxUrl: text("sandbox_url"),
-  title: text("title"),
-  files: json("files"),
+  sandboxUrl: text("sandbox_url").notNull(),
+  title: text("title").notNull(),
+  files: json("files").notNull(),
   ...dateCreation,
 })

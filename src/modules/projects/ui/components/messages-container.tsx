@@ -46,9 +46,9 @@ export const MessagesContainer = ({
     }
   }, [messages, setActiveFragment])
 
-  // useEffect(() => {
-  //   bottomRef.current?.scrollIntoView()
-  // }, [messages])
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView()
+  }, [])
 
   const lasMessage = messages[messages.length - 1]
   const isLastMessageUser = lasMessage?.role === "USER"
