@@ -14,3 +14,5 @@ export type ConfigOptions = {
   connectionString: string
   case: Casing
 }
+
+export type TreeItem = string | [string, ...TreeItem[]]

@@ -12,7 +12,7 @@ type MessageCardProps = {
   type: MessageType
   createdAt: Date
   isActiveFragment: boolean
-  onFragmentClick: (fragment: Fragment) => void
+  onFragmentClick: (fragment: Fragment | null) => void
 }
 
 type UserMessageProps = {
@@ -25,13 +25,13 @@ type AssistantMessageProps = {
   type: MessageType
   createdAt: Date
   isActiveFragment: boolean
-  onFragmentClick: (fragment: Fragment) => void
+  onFragmentClick: (fragment: Fragment | null) => void
 }
 
 type FragmentCardProps = {
   fragment: Fragment | null
   isActiveFragment: boolean
-  onFragmentClick: (fragment: Fragment) => void
+  onFragmentClick: (fragment: Fragment | null) => void
 }
 
 const UserMessage = ({ content }: UserMessageProps) => {
@@ -71,6 +71,10 @@ const AssistantMessage = ({
         <span className="text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           {format(createdAt, "HH:mm 'on' MMM dd, yyyy")}
         </span>
+      </div>
+
+      <div className="pl-8.5 flex flex-col gap-y-4 ">
+        <span>{content}</span>
         {fragment && type === "RESULT" && (
           <FragmentCard
             fragment={fragment}
@@ -79,13 +83,15 @@ const AssistantMessage = ({
           />
         )}
       </div>
-
-      <div className="pl-8.5 flex flex-col gap-y-4 ">{content}</div>
     </div>
   )
 }
 
-const FragmentCard = ({ fragment, isActiveFragment }: FragmentCardProps) => {
+const FragmentCard = ({
+  fragment,
+  isActiveFragment,
+  onFragmentClick,
+}: FragmentCardProps) => {
   return (
     <button
       className={cn(
@@ -93,6 +99,7 @@ const FragmentCard = ({ fragment, isActiveFragment }: FragmentCardProps) => {
         isActiveFragment &&
           "bg-primary text-primary-foreground border-primary hover:bg-primary",
       )}
+      onClick={() => onFragmentClick(fragment)}
     >
       <Code2Icon className="size-4 mt-0.5 " />
       <div className="flex flex-col flex-1">

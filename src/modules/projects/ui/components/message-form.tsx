@@ -104,13 +104,13 @@ export const MessageForm = ({ projectId }: MessageFormProps) => {
             </kbd>
             &nbsp;to submit
           </div>
-          <Button disabled={isDisabled}>
-            <ArrowUpIcon
-              className={cn(
-                "size-8 rounded-full",
-                isDisabled && "bg-muted-foreground border",
-              )}
-            />
+          <Button
+            disabled={isDisabled}
+            className={cn(
+              "size-8 rounded-full",
+              isDisabled && "bg-muted-foreground border",
+            )}
+          >
             {isPending ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (

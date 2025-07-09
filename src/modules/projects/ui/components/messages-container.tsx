@@ -39,7 +39,7 @@ export const MessagesContainer = ({
   //   if (lastAssitantMessage) {
   //     setActiveFragment(lastAssitantMessage.fragment)
   //   }
-  // }, [messages, setActiveFragment])
+  // }, [messages])
 
   // useEffect(() => {
   //   bottomRef.current?.scrollIntoView()
