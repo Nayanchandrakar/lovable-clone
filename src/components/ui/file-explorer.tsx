@@ -1,5 +1,5 @@
-import { extname } from "node:path"
 import { CopyCheckIcon, CopyIcon } from "lucide-react"
+import { extname } from "path"
 import { Fragment, useCallback, useMemo, useState } from "react"
 import { CodeView } from "@/components/global/code-view"
 import { TreeView } from "@/components/global/tree-view"

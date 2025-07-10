@@ -9,7 +9,8 @@
     "prepare": "husky",
     "lint": "biome lint --write",
     "format": "biome check --write",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.24.0",
@@ -17,6 +18,7 @@
     "@e2b/code-interpreter": "^1.5.1",
     "@hookform/resolvers": "^5.1.1",
     "@inngest/agent-kit": "^0.9.0",
+    "@opentelemetry/winston-transport": "^0.14.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "^6.11.1",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -71,7 +73,6 @@
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^3.0.3",
     "react-textarea-autosize": "^8.5.9",
-    "recharts": "^3.0.2",
     "server-only": "^0.0.1",
     "sonner": "^2.0.6",
     "superjson": "^2.2.2",

@@ -82,7 +82,8 @@
         "useSelfClosingElements": "error",
         "useSingleVarDeclarator": "error",
         "useTemplate": "error",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "useNodejsImportProtocol": "off"
       },
       "suspicious": {
         "noClassAssign": "off",

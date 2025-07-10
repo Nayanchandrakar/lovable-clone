@@ -36,7 +36,7 @@ export function convertFilesToTreeItems(
 
     // Navigate/create the tree structure
     for (let i = 0; i < parts.length - 1; i++) {
-      const part = parts[i]
+      const part = parts[i]!
       if (!current[part]) {
         current[part] = {}
       }
@@ -44,7 +44,7 @@ export function convertFilesToTreeItems(
     }
 
     // Add the file (leaf node)
-    const fileName = parts[parts.length - 1]
+    const fileName = parts[parts.length - 1]!
     current[fileName] = null // null indicates it's a file
   }
 
