@@ -5,6 +5,7 @@ import z from "zod"
 import { dbHttp, dbWs } from "@/database"
 import { message, project } from "@/database/schema"
 import { inngest } from "@/inngest/client"
+import { consumeCredits } from "@/lib/usage"
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init"
 
 export const projectsRouer = createTRPCRouter({
@@ -46,6 +47,22 @@ export const projectsRouer = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      try {
+        await consumeCredits()
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Somethign went wrong",
+          })
+        }
+
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have run out of credits",
+        })
+      }
+
       const createdProject = await dbWs.transaction(async (tx) => {
         const [projectResult] = await tx
           .insert(project)
