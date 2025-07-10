@@ -2,7 +2,7 @@ import { ExternalLinkIcon, RefreshCcwIcon } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Hint } from "@/components/ui/hint"
-import type { Fragment } from "@/types"
+import type { Fragment } from "@/generated/prisma"
 
 type FragmentWebProps = {
   data: Fragment

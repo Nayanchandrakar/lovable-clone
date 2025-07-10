@@ -14,10 +14,10 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { Fragment } from "@/generated/prisma"
 import { FragmentWeb } from "@/modules/projects/ui/components/fragment-web"
 import { MessagesContainer } from "@/modules/projects/ui/components/messages-container"
 import { ProjectHeader } from "@/modules/projects/ui/components/project-header"
-import type { Fragment } from "@/types"
 
 type Props = {
   projectId: string

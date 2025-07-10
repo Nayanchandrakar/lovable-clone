@@ -2,8 +2,8 @@ import { format } from "date-fns"
 import { ChevronsRightIcon, Code2Icon } from "lucide-react"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
+import type { Fragment, MessageRole, MessageType } from "@/generated/prisma"
 import { cn } from "@/lib/utils"
-import type { Fragment, MessageRole, MessageType } from "@/types"
 
 type MessageCardProps = {
   content: string

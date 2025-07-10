@@ -2,11 +2,11 @@
 
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
+import type { Fragment } from "@/generated/prisma"
 import { MessageCard } from "@/modules/projects/ui/components/message-card"
 import { MessageForm } from "@/modules/projects/ui/components/message-form"
 import { MessageLoading } from "@/modules/projects/ui/components/message-loading"
 import { useTRPC } from "@/trpc/client"
-import type { Fragment } from "@/types"
 
 type Props = {
   projectId: string
@@ -38,10 +38,10 @@ export const MessagesContainer = ({
     })
 
     if (
-      lastAssitantMessage?.fragment &&
+      lastAssitantMessage?.Fragment &&
       lastAssitantMessage.id !== lastAssitantMessage.content
     ) {
-      setActiveFragment(lastAssitantMessage.fragment)
+      setActiveFragment(lastAssitantMessage.Fragment)
       lastAssitantMessageIdRef.current = lastAssitantMessage.id
     }
   }, [messages, setActiveFragment])
@@ -62,10 +62,10 @@ export const MessagesContainer = ({
               key={message.id}
               content={message.content!}
               role={message.role!}
-              fragment={message.fragment!}
+              fragment={message.Fragment!}
               createdAt={message.createdAt}
-              isActiveFragment={activeFragment?.id === message.fragment?.id}
-              onFragmentClick={() => setActiveFragment(message.fragment)}
+              isActiveFragment={activeFragment?.id === message.Fragment?.id}
+              onFragmentClick={() => setActiveFragment(message.Fragment)}
               type={message.type!}
             />
           ))}
