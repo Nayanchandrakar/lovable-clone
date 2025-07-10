@@ -1,9 +1,7 @@
 import { TRPCError } from "@trpc/server"
-import { and, asc, eq } from "drizzle-orm"
 import z from "zod"
-import { dbHttp } from "@/database"
-import { fragment, message, project } from "@/database/schema"
 import { inngest } from "@/inngest/client"
+import { prisma } from "@/lib/db"
 import { consumeCredits } from "@/lib/usage"
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init"
 
@@ -15,27 +13,20 @@ export const messageRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
-      const messages = await dbHttp
-        .select({
-          id: message.id,
-          content: message.content,
-          role: message.role,
-          projectId: message.projectId,
-          createdAt: message.createdAt,
-          type: message.type,
-          updatedAt: message.updatedAt,
-          fragment: fragment,
-        })
-        .from(message)
-        .leftJoin(project, eq(message.projectId, project.id))
-        .leftJoin(fragment, eq(message.id, fragment.messageId))
-        .where(
-          and(
-            eq(message.projectId, input.projectId),
-            eq(project.userId, ctx.auth.userId),
-          ),
-        )
-        .orderBy(asc(message.updatedAt))
+      const messages = await prisma.message.findMany({
+        where: {
+          projectId: input.projectId,
+          Project: {
+            userId: ctx.auth.userId,
+          },
+        },
+        orderBy: {
+          updatedAt: "asc",
+        },
+        include: {
+          Fragment: true,
+        },
+      })
       return messages
     }),
   create: protectedProcedure
@@ -49,15 +40,12 @@ export const messageRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const existingProject = await dbHttp
-        .select()
-        .from(project)
-        .where(
-          and(
-            eq(project.id, input.projectId),
-            eq(project.userId, ctx.auth.userId),
-          ),
-        )
+      const existingProject = await prisma.project.findFirst({
+        where: {
+          userId: ctx.auth.userId,
+          id: input.projectId,
+        },
+      })
 
       if (!existingProject) {
         throw new TRPCError({
@@ -72,7 +60,7 @@ export const messageRouter = createTRPCRouter({
         if (error instanceof Error) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Somethign went wrong",
+            message: "Somthing went wrong",
           })
         }
 
@@ -82,15 +70,14 @@ export const messageRouter = createTRPCRouter({
         })
       }
 
-      const [createdMessage] = await dbHttp
-        .insert(message)
-        .values({
+      const createdMessage = await prisma.message.create({
+        data: {
           projectId: input.projectId,
           content: input.value,
           role: "USER",
           type: "RESULT",
-        })
-        .returning()
+        },
+      })
 
       await inngest.send({
         name: "code-agent/run",

@@ -1,10 +1,8 @@
 import { TRPCError } from "@trpc/server"
-import { and, desc, eq } from "drizzle-orm"
 import { generateSlug } from "random-word-slugs"
 import z from "zod"
-import { dbHttp, dbWs } from "@/database"
-import { message, project } from "@/database/schema"
 import { inngest } from "@/inngest/client"
+import { prisma } from "@/lib/db"
 import { consumeCredits } from "@/lib/usage"
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init"
 
@@ -16,13 +14,12 @@ export const projectsRouer = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
-      const [projects] = await dbHttp
-        .select()
-        .from(project)
-        .where(
-          and(eq(project.id, input.id), eq(project.userId, ctx.auth.userId)),
-        )
-        .orderBy(desc(project.updatedAt))
+      const projects = await prisma.project.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.auth.userId,
+        },
+      })
 
       if (!projects) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" })
@@ -30,11 +27,14 @@ export const projectsRouer = createTRPCRouter({
       return projects
     }),
   getMany: protectedProcedure.query(async ({ ctx }) => {
-    const projects = await dbHttp
-      .select()
-      .from(project)
-      .where(eq(project.userId, ctx.auth.userId))
-      .orderBy(desc(project.updatedAt))
+    const projects = await prisma.project.findMany({
+      where: {
+        userId: ctx.auth.userId,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    })
     return projects
   }),
   create: protectedProcedure
@@ -53,7 +53,7 @@ export const projectsRouer = createTRPCRouter({
         if (error instanceof Error) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Somethign went wrong",
+            message: "Somthing went wrong",
           })
         }
 
@@ -63,38 +63,30 @@ export const projectsRouer = createTRPCRouter({
         })
       }
 
-      const createdProject = await dbWs.transaction(async (tx) => {
-        const [projectResult] = await tx
-          .insert(project)
-          .values({
-            name: generateSlug(2, {
-              format: "kebab",
-            }),
-            userId: ctx.auth.userId,
-          })
-          .returning()
-
-        const [messageResult] = await tx
-          .insert(message)
-          .values({
-            projectId: projectResult?.id as string,
-            content: input.value,
-            role: "USER",
-            type: "RESULT",
-          })
-          .returning()
-
-        return { projectResult, messageResult }
+      const query = await prisma.project.create({
+        data: {
+          name: generateSlug(2, {
+            format: "kebab",
+          }),
+          userId: ctx.auth.userId,
+          Message: {
+            create: {
+              content: input.value,
+              role: "USER",
+              type: "RESULT",
+            },
+          },
+        },
       })
 
       await inngest.send({
         name: "code-agent/run",
         data: {
           value: input.value,
-          projectId: createdProject?.projectResult?.id as string,
+          projectId: query?.id,
         },
       })
 
-      return createdProject
+      return query
     }),
 })

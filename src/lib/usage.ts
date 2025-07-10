@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server"
-import { RateLimiterPostgres } from "rate-limiter-flexible"
+import { RateLimiterPrisma } from "rate-limiter-flexible"
+import { prisma } from "@/lib/db"
 
 const FREE_POINTS = 5
 const DURATION = 30 * 24 * 60 * 60
@@ -10,9 +11,9 @@ export async function getUsageTracker() {
   const { has } = await auth()
   const hasProAccess = has({ plan: "pro" })
 
-  const usageTracker = new RateLimiterPostgres({
-    storeClient: () => {},
-    tableName: "usage",
+  const usageTracker = new RateLimiterPrisma({
+    storeClient: prisma,
+    tableName: "Usage",
     points: hasProAccess ? PRO_POINTS : FREE_POINTS,
     duration: DURATION,
   })

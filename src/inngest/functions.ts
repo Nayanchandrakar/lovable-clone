@@ -8,15 +8,13 @@ import {
   type Message,
   type Tool,
 } from "@inngest/agent-kit"
-import { desc, eq } from "drizzle-orm"
 import z from "zod"
 import {
   FRAGMENT_TITLE_PROMPT,
   PROMPT,
   RESPONSE_PROMPT,
 } from "@/constants/prompt"
-import { dbHttp, dbWs } from "@/database"
-import { fragment, message } from "@/database/schema"
+import { prisma } from "@/lib/db"
 import { SANDBOX_TIMEOUT } from "."
 import { inngest } from "./client"
 import {
@@ -46,13 +44,15 @@ export const codeAgentFunction = inngest.createFunction(
       "get-previous-messages",
       async () => {
         const formattedMessages: Message[] = []
-
-        const messages = await dbHttp
-          .select()
-          .from(message)
-          .where(eq(message.projectId, event.data.projectId))
-          .orderBy(desc(message.createdAt))
-          .limit(5)
+        const messages = await prisma.message.findMany({
+          where: {
+            projectId: event.data.projectId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        })
 
         for (const singleMessage of messages) {
           formattedMessages.push({
@@ -215,7 +215,7 @@ export const codeAgentFunction = inngest.createFunction(
       system: FRAGMENT_TITLE_PROMPT,
       description: "A fragment title generator",
       model: gemini({
-        model: "gemini-1.0-pro",
+        model: "gemini-2.0-flash",
       }),
     })
 
@@ -224,7 +224,7 @@ export const codeAgentFunction = inngest.createFunction(
       system: RESPONSE_PROMPT,
       description: "A response generator",
       model: gemini({
-        model: "gemini-1.0-pro",
+        model: "gemini-2.0-flash",
       }),
     })
 
@@ -247,44 +247,34 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run("save-result", async () => {
       if (isError) {
-        const [createdMessage] = await dbHttp
-          .insert(message)
-          .values({
+        const createdMessage = await prisma.message.create({
+          data: {
             projectId: event.data.projectId,
             content: "Something went wrong. Please try again",
             role: "ASSISTANT",
             type: "ERROR",
-          })
-          .returning()
-
+          },
+        })
         return createdMessage
       }
 
-      const res = await dbWs.transaction(async (tx) => {
-        const [createdMessage] = await tx
-          .insert(message)
-          .values({
-            projectId: event.data.projectId,
-            content: parseAgentOutput(responseOutput),
-            role: "ASSISTANT",
-            type: "RESULT",
-          })
-          .returning()
-
-        const [createdFragment] = await tx
-          .insert(fragment)
-          .values({
-            messageId: createdMessage?.id as string,
-            sandboxUrl,
-            title: parseAgentOutput(fragmentTitleOutput),
-            files: result.state.data.files,
-          })
-          .returning()
-
-        return { createdMessage, createdFragment }
+      const query = await prisma.message.create({
+        data: {
+          projectId: event.data.projectId,
+          content: parseAgentOutput(responseOutput),
+          role: "ASSISTANT",
+          type: "RESULT",
+          Fragment: {
+            create: {
+              sandboxUrl,
+              title: parseAgentOutput(fragmentTitleOutput),
+              files: result.state.data.files,
+            },
+          },
+        },
       })
 
-      return res
+      return query
     })
 
     return {
