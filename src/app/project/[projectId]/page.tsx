@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { ProjectView } from "@/modules/projects/ui/views/project-view"
 import { HydrateClient, prefetch, trpc } from "@/trpc/server"
 
@@ -18,9 +19,11 @@ const ProjectPage = async ({ params }: pageProps) => {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<div>Loading.....</div>}>
-        <ProjectView projectId={projectId} />
-      </Suspense>
+      <ErrorBoundary fallback={<p>Error...</p>}>
+        <Suspense fallback={<div>Loading.....</div>}>
+          <ProjectView projectId={projectId} />
+        </Suspense>
+      </ErrorBoundary>
     </HydrateClient>
   )
 }
