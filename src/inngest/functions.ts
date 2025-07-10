@@ -2,16 +2,28 @@ import Sandbox from "@e2b/code-interpreter"
 import {
   createAgent,
   createNetwork,
+  createState,
   createTool,
   gemini,
+  type Message,
   type Tool,
 } from "@inngest/agent-kit"
+import { desc, eq } from "drizzle-orm"
 import z from "zod"
-import { PROMPT } from "@/constants/prompt"
+import {
+  FRAGMENT_TITLE_PROMPT,
+  PROMPT,
+  RESPONSE_PROMPT,
+} from "@/constants/prompt"
 import { dbHttp, dbWs } from "@/database"
 import { fragment, message } from "@/database/schema"
+import { SANDBOX_TIMEOUT } from "."
 import { inngest } from "./client"
-import { getSandbox, lastAssitantTextMessageContent } from "./utils"
+import {
+  getSandbox,
+  lastAssitantTextMessageContent,
+  parseAgentOutput,
+} from "./utils"
 
 type AgentState = {
   summary: string
@@ -26,8 +38,43 @@ export const codeAgentFunction = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-coder-template")
+      await sandbox.setTimeout(SANDBOX_TIMEOUT)
       return sandbox.sandboxId
     })
+
+    const previousMessages = await step.run(
+      "get-previous-messages",
+      async () => {
+        const formattedMessages: Message[] = []
+
+        const messages = await dbHttp
+          .select()
+          .from(message)
+          .where(eq(message.projectId, event.data.projectId))
+          .orderBy(desc(message.createdAt))
+          .limit(5)
+
+        for (const singleMessage of messages) {
+          formattedMessages.push({
+            type: "text",
+            role: singleMessage.role === "ASSISTANT" ? "assistant" : "user",
+            content: singleMessage.content,
+          })
+        }
+
+        return formattedMessages.reverse()
+      },
+    )
+
+    const state = createState<AgentState>(
+      {
+        summary: "",
+        files: {},
+      },
+      {
+        messages: previousMessages,
+      },
+    )
 
     const codeAgent = createAgent<AgentState>({
       name: "code-agent",
@@ -149,6 +196,7 @@ export const codeAgentFunction = inngest.createFunction(
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
+      defaultState: state,
       maxIter: 15,
       router: async ({ network }) => {
         const summary = network.state.data.summary
@@ -158,7 +206,35 @@ export const codeAgentFunction = inngest.createFunction(
       },
     })
 
-    const result = await network.run(event.data.value)
+    const result = await network.run(event.data.value, {
+      state,
+    })
+
+    const fragmentTitleGenerator = createAgent({
+      name: "fragment-title-generator",
+      system: FRAGMENT_TITLE_PROMPT,
+      description: "A fragment title generator",
+      model: gemini({
+        model: "gemini-1.0-pro",
+      }),
+    })
+
+    const responseGenerator = createAgent({
+      name: "response-generator",
+      system: RESPONSE_PROMPT,
+      description: "A response generator",
+      model: gemini({
+        model: "gemini-1.0-pro",
+      }),
+    })
+
+    const { output: fragmentTitleOutput } = await fragmentTitleGenerator.run(
+      result.state.data.summary,
+    )
+    const { output: responseOutput } = await responseGenerator.run(
+      result.state.data.summary,
+    )
+
     const isError =
       !result.state.data.summary ||
       Object.keys(result.state.data.files || {}).length === 0
@@ -189,7 +265,7 @@ export const codeAgentFunction = inngest.createFunction(
           .insert(message)
           .values({
             projectId: event.data.projectId,
-            content: result.state.data.summary,
+            content: parseAgentOutput(responseOutput),
             role: "ASSISTANT",
             type: "RESULT",
           })
@@ -200,7 +276,7 @@ export const codeAgentFunction = inngest.createFunction(
           .values({
             messageId: createdMessage?.id as string,
             sandboxUrl,
-            title: "Fragment",
+            title: parseAgentOutput(fragmentTitleOutput),
             files: result.state.data.files,
           })
           .returning()

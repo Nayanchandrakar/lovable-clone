@@ -4,6 +4,7 @@ import z from "zod"
 import { dbHttp } from "@/database"
 import { fragment, message, project } from "@/database/schema"
 import { inngest } from "@/inngest/client"
+import { consumeCredits } from "@/lib/usage"
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init"
 
 export const messageRouter = createTRPCRouter({
@@ -62,6 +63,22 @@ export const messageRouter = createTRPCRouter({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Project not found",
+        })
+      }
+
+      try {
+        await consumeCredits()
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Somethign went wrong",
+          })
+        }
+
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have run out of credits",
         })
       }
 
